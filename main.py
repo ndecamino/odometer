@@ -4,7 +4,7 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
-from github import Github
+from github import Github, Auth
 from github.GithubException import UnknownObjectException
 import base64
 import io
@@ -43,7 +43,8 @@ def get_github_client():
     """Initialize GitHub client"""
     try:
         token = st.secrets["GITHUB_TOKEN"]
-        return Github(token)
+        auth = Auth.Token(token)
+        return Github(auth=auth)
     except Exception as e:
         st.error(f"Error: Could not connect to GitHub. Make sure GITHUB_TOKEN is set in secrets.")
         st.stop()
