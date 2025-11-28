@@ -21,6 +21,7 @@ DATA_DIR = 'data'
 def initialize_files():
     """Initialize data files if they don't exist"""
     import os
+    import shutil
 
     # Create data directory if it doesn't exist
     if not os.path.exists('data'):
@@ -28,13 +29,23 @@ def initialize_files():
 
     # Create records.csv if it doesn't exist
     if not os.path.exists('data/records.csv'):
-        records_df = pd.DataFrame(columns=['id', 'timestamp', 'user', 'odometer', 'trip', 'tank_id', 'pay'])
-        records_df.to_csv('data/records.csv', index=False)
+        # Check if a seed file exists (for initial deployment)
+        if os.path.exists('seed/records.csv'):
+            shutil.copy('seed/records.csv', 'data/records.csv')
+        else:
+            # Create empty file with headers
+            records_df = pd.DataFrame(columns=['id', 'timestamp', 'user', 'odometer', 'trip', 'tank_id', 'pay'])
+            records_df.to_csv('data/records.csv', index=False)
 
     # Create tanks.csv if it doesn't exist
     if not os.path.exists('data/tanks.csv'):
-        tanks_df = pd.DataFrame(columns=['id', 'timestamp', 'price'] + USERS)
-        tanks_df.to_csv('data/tanks.csv', index=False)
+        # Check if a seed file exists (for initial deployment)
+        if os.path.exists('seed/tanks.csv'):
+            shutil.copy('seed/tanks.csv', 'data/tanks.csv')
+        else:
+            # Create empty file with headers
+            tanks_df = pd.DataFrame(columns=['id', 'timestamp', 'price'] + USERS)
+            tanks_df.to_csv('data/tanks.csv', index=False)
 
 def load_records():
     df = pd.read_csv(f"data/records.csv", parse_dates=['timestamp'])
