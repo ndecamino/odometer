@@ -498,9 +498,6 @@ def form_edit_record():
 
 # Main App ---------------------------------------------------------------------
 
-# Initialize files on first run
-initialize_files()
-
 st.title('Bencina Gol')
 
 if st.session_state.current_view == 'home':
