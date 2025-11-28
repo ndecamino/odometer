@@ -4,10 +4,6 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
-from github import Github, Auth
-from github.GithubException import UnknownObjectException
-import base64
-import io
 
 # Page config
 st.set_page_config(
@@ -21,6 +17,24 @@ USERS = ['nicolas', 'agustin', 'rosario', 'mama', 'papa']
 DATA_DIR = 'data'
 
 # Data Functions ---------------------------------------------------------------
+
+def initialize_files():
+    """Initialize data files if they don't exist"""
+    import os
+
+    # Create data directory if it doesn't exist
+    if not os.path.exists('data'):
+        os.makedirs('data')
+
+    # Create records.csv if it doesn't exist
+    if not os.path.exists('data/records.csv'):
+        records_df = pd.DataFrame(columns=['id', 'timestamp', 'user', 'odometer', 'trip', 'tank_id', 'pay'])
+        records_df.to_csv('data/records.csv', index=False)
+
+    # Create tanks.csv if it doesn't exist
+    if not os.path.exists('data/tanks.csv'):
+        tanks_df = pd.DataFrame(columns=['id', 'timestamp', 'price'] + USERS)
+        tanks_df.to_csv('data/tanks.csv', index=False)
 
 def load_records():
     df = pd.read_csv(f"data/records.csv", parse_dates=['timestamp'])
@@ -497,6 +511,19 @@ def form_edit_record():
 
 
 # Main App ---------------------------------------------------------------------
+
+# Initialize files on first run
+initialize_files()
+
+# Initialize session state
+if 'current_view' not in st.session_state:
+    st.session_state.current_view = 'home'
+if 'selected_record_id' not in st.session_state:
+    st.session_state.selected_record_id = None
+if 'message' not in st.session_state:
+    st.session_state.message = None
+if 'message_type' not in st.session_state:
+    st.session_state.message_type = None
 
 st.title('Bencina Gol')
 
