@@ -18,148 +18,42 @@ st.set_page_config(
 
 # Predefined constants
 USERS = ['nicolas', 'agustin', 'rosario', 'mama', 'papa']
-DATA_DIR = 'data'  # Path to data directory in the repo
-
-# GitHub configuration - set these as Streamlit secrets
-# In Streamlit Cloud: Settings > Secrets
-# Required secrets:
-# GITHUB_TOKEN = "your_github_personal_access_token"
-# GITHUB_REPO = "username/repository_name"  (should be the same repo as your app code)
-# GITHUB_BRANCH = "main"  # or your preferred branch
-
-# Initialize session state
-if 'current_view' not in st.session_state:
-    st.session_state.current_view = 'home'
-if 'selected_record_id' not in st.session_state:
-    st.session_state.selected_record_id = None
-if 'message' not in st.session_state:
-    st.session_state.message = None
-if 'message_type' not in st.session_state:
-    st.session_state.message_type = None
-
-# GitHub Functions -------------------------------------------------------------
-
-def get_github_client():
-    """Initialize GitHub client"""
-    try:
-        token = st.secrets["GITHUB_TOKEN"]
-        auth = Auth.Token(token)
-        return Github(auth=auth)
-    except Exception as e:
-        st.error(f"Error: Could not connect to GitHub. Make sure GITHUB_TOKEN is set in secrets.")
-        st.stop()
-
-def get_repo():
-    """Get GitHub repository"""
-    try:
-        g = get_github_client()
-        repo_name = st.secrets["GITHUB_REPO"]
-        return g.get_repo(repo_name)
-    except Exception as e:
-        st.error(f"Error: Could not access repository. Make sure GITHUB_REPO is set in secrets.")
-        st.stop()
-
-def get_file_from_github(filename):
-    """Get file content from GitHub"""
-    try:
-        repo = get_repo()
-        branch = st.secrets.get("GITHUB_BRANCH", "main")
-        filepath = f"{DATA_DIR}/{filename}"
-
-        try:
-            file_content = repo.get_contents(filepath, ref=branch)
-            content = base64.b64decode(file_content.content).decode('utf-8')
-            return content, file_content.sha
-        except UnknownObjectException:
-            # File doesn't exist, return empty content
-            return None, None
-    except Exception as e:
-        st.error(f"Error reading {filepath} from GitHub: {str(e)}")
-        return None, None
-
-def save_file_to_github(filename, content, sha=None):
-    """Save file content to GitHub"""
-    try:
-        repo = get_repo()
-        branch = st.secrets.get("GITHUB_BRANCH", "main")
-        filepath = f"{DATA_DIR}/{filename}"
-
-        message = f"Update {filename}"
-
-        if sha:
-            # Update existing file
-            repo.update_file(filepath, message, content, sha, branch=branch)
-        else:
-            # Create new file
-            repo.create_file(filepath, message, content, branch=branch)
-
-        return True
-    except Exception as e:
-        st.error(f"Error saving {filepath} to GitHub: {str(e)}")
-        return False
-
-def initialize_files():
-    """Initialize CSV files if they don't exist"""
-    # Initialize records.csv
-    records_content, _ = get_file_from_github("records.csv")
-    if records_content is None:
-        # Create empty records file with headers
-        empty_records = pd.DataFrame(columns=['id', 'timestamp', 'user', 'odometer', 'trip', 'tank_id', 'pay'])
-        csv_content = empty_records.to_csv(index=False)
-        save_file_to_github("records.csv", csv_content)
-
-    # Initialize tanks.csv
-    tanks_content, _ = get_file_from_github("tanks.csv")
-    if tanks_content is None:
-        # Create empty tanks file with headers
-        columns = ['id', 'timestamp', 'price'] + USERS
-        empty_tanks = pd.DataFrame(columns=columns)
-        csv_content = empty_tanks.to_csv(index=False)
-        save_file_to_github("tanks.csv", csv_content)
+DATA_DIR = 'data'
 
 # Data Functions ---------------------------------------------------------------
 
 def load_records():
-    """Load records from GitHub"""
-    content, _ = get_file_from_github("records.csv")
-    if content:
-        df = pd.read_csv(io.StringIO(content), parse_dates=['timestamp'])
-        if not df.empty:
-            df['id'] = df['id'].astype(int)
-            df['odometer'] = df['odometer'].astype(int)
-            df['trip'] = df['trip'].astype(int)
-            df['tank_id'] = df['tank_id'].astype(int)
-            df['pay'] = df['pay'].astype(int)
+    df = pd.read_csv(f"data/records.csv", parse_dates=['timestamp'])
+    if not df.empty:
+        df['id'] = df['id'].astype(int)
+        df['odometer'] = df['odometer'].astype(int)
+        df['trip'] = df['trip'].astype(int)
+        df['tank_id'] = df['tank_id'].astype(int)
+        df['pay'] = df['pay'].astype(int)
         return df
     else:
-        return pd.DataFrame(columns=['id', 'timestamp', 'user', 'odometer', 'trip', 'tank_id', 'pay'])
+        cols = ['id', 'timestamp', 'user', 'odometer', 'trip', 'tank_id', 'pay']
+        return pd.DataFrame(columns=cols)
 
 def save_records(df):
-    """Save records to GitHub"""
-    csv_content = df.to_csv(index=False)
-    _, sha = get_file_from_github("records.csv")
-    return save_file_to_github("records.csv", csv_content, sha)
+    df.to_csv("data/records.csv", index=False)
+    return None
 
 def load_tanks():
-    """Load tanks from GitHub"""
-    content, _ = get_file_from_github("tanks.csv")
-    if content:
-        df = pd.read_csv(io.StringIO(content), parse_dates=['timestamp'])
-        if not df.empty:
-            df['id'] = df['id'].astype(int)
-            df['price'] = df['price'].astype(int)
-            for user in USERS:
-                df[user] = df[user].astype(int)
+    df = pd.read_csv(f"data/tanks.csv", parse_dates=['timestamp'])
+    if not df.empty:
+        df['id'] = df['id'].astype(int)
+        df['price'] = df['price'].astype(int)
+        for user in USERS:
+            df[user] = df[user].astype(float)
         return df
     else:
         columns = ['id', 'timestamp', 'price'] + USERS
         return pd.DataFrame(columns=columns)
 
 def save_tanks(df):
-    """Save tanks to GitHub"""
-    csv_content = df.to_csv(index=False)
-    _, sha = get_file_from_github("tanks.csv")
-    return save_file_to_github("tanks.csv", csv_content, sha)
+    df.to_csv("data/tanks.csv", index=False)
+    return None
 
 def verify_odometer(record):
     """Verify that the odometer reading is valid"""
