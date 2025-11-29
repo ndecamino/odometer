@@ -3,6 +3,7 @@
 # Imports
 import streamlit as st
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import pandas as pd
 
 # Page config
@@ -282,9 +283,10 @@ def form_add_record():
     with st.form("add_record_form", clear_on_submit=True):
         col1, col2 = st.columns(2)
         with col1:
-            date = st.date_input("Fecha", value=datetime.now(), format="DD/MM/YYYY")
+            chile_now = datetime.now(ZoneInfo("America/Santiago"))
+            date = st.date_input("Fecha", value=chile_now, format="DD/MM/YYYY")
         with col2:
-            time = st.time_input("Hora", value=datetime.now().time())
+            time = st.time_input("Hora", value=chile_now.time())
 
         user = st.selectbox("Usuario", options=[''] + USERS, format_func=lambda x: 'Usuario' if x == '' else x.capitalize())
         odometer = st.text_input("Kilometraje", placeholder="Kilometraje")
