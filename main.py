@@ -292,7 +292,7 @@ def form_add_record():
         odometer = st.text_input("Kilometraje", placeholder="Kilometraje")
         price = st.text_input("Bencina", placeholder="Bencina (opcional)")
 
-        submitted = st.form_submit_button("Registrar", use_container_width=True)
+        submitted = st.form_submit_button("Registrar", width='stretch')
 
         if submitted:
             if not user or not odometer:
@@ -344,7 +344,7 @@ def table_last_records():
         # Use on_select to handle row selection
         event = st.dataframe(
             display_df,
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             on_select="rerun",
             selection_mode="single-row"
@@ -357,7 +357,7 @@ def table_last_records():
             go_edit_record(selected_id)
             st.rerun()
 
-    st.button("Ver todos", on_click=go_all_records, use_container_width=True, type="secondary", key="records_view_all")
+    st.button("Ver todos", on_click=go_all_records, width='stretch', type="secondary", key="records_view_all")
 
 def table_all_records():
     st.markdown("### ☑︎ Registros")
@@ -385,7 +385,7 @@ def table_all_records():
         # Use on_select to handle row selection with scrolling
         event = st.dataframe(
             display_df,
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             on_select="rerun",
             selection_mode="single-row",
@@ -399,7 +399,7 @@ def table_all_records():
             go_edit_record(selected_id)
             st.rerun()
 
-    st.button("Volver", on_click=go_home, use_container_width=True, type="secondary", key="records_back")
+    st.button("Volver", on_click=go_home, width='stretch', type="secondary", key="records_back")
 
 def table_last_tanks():
     st.markdown("### $ Estanques")
@@ -422,9 +422,9 @@ def table_last_tanks():
             data.append(tank_row)
 
         display_df = pd.DataFrame(data)
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        st.dataframe(display_df, width='stretch', hide_index=True)
 
-    st.button("Ver todos", on_click=go_all_tanks, use_container_width=True, type="secondary", key="tanks_view_all")
+    st.button("Ver todos", on_click=go_all_tanks, width='stretch', type="secondary", key="tanks_view_all")
 
 def table_all_tanks():
     st.markdown("### $ Estanques")
@@ -445,9 +445,9 @@ def table_all_tanks():
             data.append(tank_row)
 
         display_df = pd.DataFrame(data)
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        st.dataframe(display_df, width='stretch', hide_index=True)
 
-    st.button("Volver", on_click=go_home, use_container_width=True, type="secondary", key="tanks_back")
+    st.button("Volver", on_click=go_home, width='stretch', type="secondary", key="tanks_back")
 
 def form_edit_record():
     st.markdown("### ✏︎ Editar registro")
@@ -480,7 +480,7 @@ def form_edit_record():
         pay = st.text_input("Bencina", value=str(old_record['pay']))
         st.text_input("Viaje", value=str(old_record['trip']), disabled=True)
 
-        submitted = st.form_submit_button("Actualizar", use_container_width=True)
+        submitted = st.form_submit_button("Actualizar", width='stretch')
 
         if submitted:
             new_record = {
@@ -500,7 +500,7 @@ def form_edit_record():
             st.rerun()
 
     # Delete button
-    if st.button("Eliminar", use_container_width=True, type="secondary"):
+    if st.button("Eliminar", width='stretch', type="secondary"):
         st.session_state.confirm_delete = True
         st.rerun()
 
@@ -508,19 +508,19 @@ def form_edit_record():
     if st.session_state.get('confirm_delete', False):
         st.warning("¿Estás seguro?")
         col1, col2 = st.columns(2)
-        if col1.button("Sí, eliminar", use_container_width=True):
+        if col1.button("Sí, eliminar", width='stretch'):
             delete_record(record_id)
             st.session_state.message = "❌ Eliminado"
             st.session_state.message_type = 'success'
             st.session_state.confirm_delete = False
             go_home()
             st.rerun()
-        if col2.button("Cancelar", use_container_width=True):
+        if col2.button("Cancelar", width='stretch'):
             st.session_state.confirm_delete = False
             st.rerun()
 
     # Back button
-    st.button("Volver", on_click=go_home, use_container_width=True, type="primary")
+    st.button("Volver", on_click=go_home, width='stretch', type="primary")
 
 
 # Main App ---------------------------------------------------------------------
